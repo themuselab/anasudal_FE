@@ -82,7 +82,6 @@ export function humanize(e: unknown): string {
     switch (e.code) {
       case "SESSION_NOT_FOUND": return "대화가 만료됐어요. 새로 시작할게요.";
       case "RATE_LIMITED": return "질문이 너무 많아요. 잠시 후 다시 시도해주세요.";
-      case "LLM_RATE_LIMITED": return "지금 질문이 몰려 있어요. 몇 초 뒤 다시 시도해주세요.";
       case "NETWORK_ERROR": return e.message;
       default: return e.message || "문제가 생겼어요. 다시 시도해주세요.";
     }
