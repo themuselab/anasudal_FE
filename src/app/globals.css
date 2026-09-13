@@ -1,26 +1,111 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ──────────────────────────────────────────────────────────────
+   안아수달 디자인 토큰 — 디자인 시스템 시트 그대로. 값은 여기에만 있다.
+   컴포넌트는 토큰 유틸리티(bg-primary, text-muted, t-title-s …)만 쓴다. 임의값([..]) 금지.
+   ────────────────────────────────────────────────────────────── */
+@theme {
+  /* ── 브레이크포인트: PC / 모바일 둘뿐. 768px 미만 = 모바일, 이상 = PC(태블릿 포함).
+        기본 sm/lg/xl/2xl 은 지워서 실수로 못 쓰게 한다 — 반응형은 `md:` 하나만. */
+  --breakpoint-*: initial;
+  --breakpoint-md: 768px;
+
+  /* ── 팔레트 900 → 50 */
+  --color-green-900: #102421;
+  --color-green-800: #183833;
+  --color-green-700: #204A44;
+  --color-green-600: #295E56;   /* ★ primary */
+  --color-green-500: #3A7A6E;
+  --color-green-400: #5E9689;
+  --color-green-300: #92BCB2;
+  --color-green-200: #BCD7D0;
+  --color-green-100: #DEEBE7;
+  --color-green-50:  #F2F7F5;
+
+  /* ── 의미 토큰 */
+  --color-primary:      #295E56;   /* 안아수달의 액션, CTA 버튼 */
+  --color-strong:       #1B2A27;   /* text/strong — 제목, 핵심 숫자, 본문 강조 */
+  --color-body:         #40534F;   /* text/body — 기본 본문, 설명 문단 */
+  --color-muted:        #5A6B67;   /* text/muted — 라벨, 캡션, 안내문 */
+  --color-placeholder:  #9AA8A5;   /* text/placeholder — 입력 힌트, 비활성 텍스트 */
+  --color-line:         #D8DDD6;   /* line/default — 구분선, 입력 필드 보더 */
+  --color-line-subtle:  #EFEFE9;   /* line/subtle — 리스트 내부 헤어라인 */
+  --color-press:        #204A44;   /* action/press */
+  --color-soft:         #DEEBE7;   /* action/soft — tinted */
+  --color-disabled:     #E9E8E0;   /* action/disabled */
+  --color-card:         #FFFFFF;   /* surface/card */
+  --color-base:         #F3F2EC;   /* surface/base */
+  --color-sunken:       #E9E8E0;   /* surface/sunken */
+  --color-success:      #24634A;
+  --color-success-bg:   #E4F2EA;
+  --color-warning:      #B26200;
+  --color-warning-bg:   #FBF1DC;
+  --color-danger:       #9E382E;
+  --color-danger-bg:    #FBE9E6;
+
+  /* ── 폰트: 전부 Pretendard (layout.tsx next/font → --font-pretendard) */
+  --font-sans: var(--font-pretendard), "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+               system-ui, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+
+  /* ── 타이포 스케일 (시트 size / line / spacing / weight). 모바일 값이 기본, `-lg` 가 Desktop(768+)
+        text-display → font-size + line-height + letter-spacing + font-weight 가 한 번에 적용됨 (Tailwind v4) */
+  --text-display: 34px;      --text-display--line-height: 44px;      --text-display--letter-spacing: -0.025em; --text-display--font-weight: 700;
+  --text-display-lg: 52px;   --text-display-lg--line-height: 66px;   --text-display-lg--letter-spacing: -0.025em; --text-display-lg--font-weight: 700;
+  --text-title-l: 26px;      --text-title-l--line-height: 36px;      --text-title-l--letter-spacing: -0.02em;  --text-title-l--font-weight: 700;
+  --text-title-l-lg: 36px;   --text-title-l-lg--line-height: 48px;   --text-title-l-lg--letter-spacing: -0.02em;  --text-title-l-lg--font-weight: 700;
+  --text-title-m: 21px;      --text-title-m--line-height: 30px;      --text-title-m--letter-spacing: -0.02em;  --text-title-m--font-weight: 600;
+  --text-title-m-lg: 26px;   --text-title-m-lg--line-height: 38px;   --text-title-m-lg--letter-spacing: -0.02em;  --text-title-m-lg--font-weight: 600;
+  --text-title-s: 18px;      --text-title-s--line-height: 26px;      --text-title-s--letter-spacing: -0.015em; --text-title-s--font-weight: 600;
+  --text-title-s-lg: 20px;   --text-title-s-lg--line-height: 30px;   --text-title-s-lg--letter-spacing: -0.015em; --text-title-s-lg--font-weight: 600;
+  --text-body-l: 17px;       --text-body-l--line-height: 29px;       --text-body-l--letter-spacing: 0;         --text-body-l--font-weight: 400;
+  --text-body-l-lg: 18px;    --text-body-l-lg--line-height: 32px;    --text-body-l-lg--letter-spacing: 0;         --text-body-l-lg--font-weight: 400;
+  --text-body-m: 16px;       --text-body-m--line-height: 26px;       --text-body-m--letter-spacing: 0;         --text-body-m--font-weight: 400;
+  --text-body-m-lg: 16px;    --text-body-m-lg--line-height: 28px;    --text-body-m-lg--letter-spacing: 0;         --text-body-m-lg--font-weight: 400;
+  --text-caption: 14px;      --text-caption--line-height: 22px;      --text-caption--letter-spacing: 0;         --text-caption--font-weight: 500;
+  --text-caption-lg: 14px;   --text-caption-lg--line-height: 24px;   --text-caption-lg--letter-spacing: 0;         --text-caption-lg--font-weight: 500;
+  --text-label: 0.75rem;     --text-label--line-height: 18px;        --text-label--letter-spacing: 0.01em;      --text-label--font-weight: 700;
+  --text-numeric-xl: 40px;   --text-numeric-xl--line-height: 44px;   --text-numeric-xl--letter-spacing: 0;         --text-numeric-xl--font-weight: 700;
+  --text-numeric-xl-lg: 56px;--text-numeric-xl-lg--line-height: 60px;--text-numeric-xl-lg--letter-spacing: 0;         --text-numeric-xl-lg--font-weight: 700;
+
+  /* ── 라운드·그림자 */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+  --shadow-card:       0 1px 2px rgba(27, 42, 39, 0.04), 0 4px 16px rgba(27, 42, 39, 0.06);
+  --shadow-card-focus: 0 2px 12px rgba(27, 42, 39, 0.10);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ── 타이포 유틸리티: 모바일 → md 에서 Desktop. 색은 넣지 않는다 (Text 컴포넌트 tone 이 정함) */
+@utility t-display    { @apply text-display    md:text-display-lg; }
+@utility t-title-l    { @apply text-title-l    md:text-title-l-lg; }
+@utility t-title-m    { @apply text-title-m    md:text-title-m-lg; }
+@utility t-title-s    { @apply text-title-s    md:text-title-s-lg; }
+@utility t-body-l     { @apply text-body-l     md:text-body-l-lg; }
+@utility t-body-m     { @apply text-body-m     md:text-body-m-lg; }
+@utility t-caption    { @apply text-caption    md:text-caption-lg; }
+@utility t-label      { @apply text-label; }
+@utility t-numeric-xl { @apply text-numeric-xl md:text-numeric-xl-lg tabular-nums; }
+
+/* AI 답변 본문: 서버가 내려준 **굵게** → text/strong */
+@utility prose-answer {
+  & strong { @apply font-bold text-strong; }
+  & p + p  { @apply mt-3; }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ── 기본 */
+@layer base {
+  html { color-scheme: light; }
+  body {
+    @apply bg-base font-sans text-body antialiased;
+    font-feature-settings: "ss01", "tnum";   /* Pretendard: 가독형 글리프, 숫자 고정폭 */
+    text-rendering: optimizeLegibility;
+    word-break: keep-all;                    /* 한글 어절 단위 줄바꿈 */
+    overflow-wrap: anywhere;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  ::selection { @apply bg-soft text-strong; }
+  ::placeholder { @apply text-placeholder; }
+  /* 키보드 포커스 링 — base 레이어라 유틸리티(outline-none)로 끌 수 있다 */
+  :focus-visible { @apply rounded-xs outline-2 outline-offset-2 outline-primary; }
 }

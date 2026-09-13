@@ -1,11 +1,13 @@
 import { AppFooter, AppHeader } from "@/components/layout/AppHeader";
-import { ChatHome } from "@/components/chat/ChatHome";
+import { BrowseView } from "@/components/browse/BrowseView";
 
-export default function Home() {
+export const metadata = { title: "둘러보기" };
+
+export default function BrowsePage() {
   return (
     <div className="flex min-h-dvh flex-col">
       <AppHeader />
-      <ChatHome />
+      <BrowseView />
       <AppFooter />
     </div>
   );
