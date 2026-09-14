@@ -12,15 +12,17 @@ export function UserBubble({ text }: { text: string }) {
   );
 }
 
-/** 답변 문장 끝에 붙는 작은 수달 (시안: "기관을 추천해드릴까요? 🦦") */
+/** 답변 문장 끝에 붙는 작은 수달 (시안: "기관을 추천해드릴까요? 🦦")
+ *  높이를 1.2em 으로 둬서 본문 글자 크기를 그대로 따라간다 — 토큰이 아니라 본문에 종속된 값 */
 export function OtterMark() {
   return (
     <Image
       src="/otter.png"
       alt=""
-      width={30}
-      height={20}
-      className="ml-1.5 inline-block h-auto w-5 translate-y-0.5 align-baseline"
+      width={45}
+      height={30}
+      className="ml-1.5 inline-block w-auto align-text-bottom"
+      style={{ height: "1.2em" }}
     />
   );
 }

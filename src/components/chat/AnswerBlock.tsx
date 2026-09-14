@@ -25,12 +25,16 @@ export function AnswerBlock({
   return (
     <div className="max-w-[92%] md:max-w-[80%]">
       <div className="prose-answer t-body-l text-body">
-        <AnswerText text={res.text} />
-        {streaming ? (
-          <span className="ml-0.5 inline-block h-[1em] w-0.5 animate-pulse bg-primary align-middle" aria-hidden />
-        ) : (
-          <OtterMark />
-        )}
+        <AnswerText
+          text={res.text}
+          trailing={
+            streaming ? (
+              <span className="ml-0.5 inline-block h-[1em] w-0.5 animate-pulse bg-primary align-middle" aria-hidden />
+            ) : (
+              <OtterMark />
+            )
+          }
+        />
       </div>
 
       {!streaming && res.answer_id && res.fallback_tier > 0 && <FeedbackRow answerId={res.answer_id} />}
