@@ -22,6 +22,7 @@ export function Segmented<V extends string>({
   value,
   onChange,
   full,
+  compact,
   className,
   "aria-label": ariaLabel,
 }: {
@@ -30,6 +31,8 @@ export function Segmented<V extends string>({
   onChange: (v: V) => void;
   /** 트랙을 가로로 꽉 채우고 세그먼트를 균등 분할 */
   full?: boolean;
+  /** 상단 바가 스크롤로 줄어들 때 — 한 단계 작게 */
+  compact?: boolean;
   className?: string;
   "aria-label"?: string;
 }) {
@@ -37,7 +40,8 @@ export function Segmented<V extends string>({
     <div
       role="tablist"
       aria-label={ariaLabel}
-      className={cn("inline-flex items-center gap-1 rounded-pill bg-sunken p-0.5", full && "flex w-full", className)}
+      className={cn("inline-flex items-center gap-1 rounded-pill bg-sunken p-0.5 transition-all duration-200",
+                    full && "flex w-full", className)}
     >
       {options.map((o) => {
         const selected = o.value === value;
@@ -50,7 +54,10 @@ export function Segmented<V extends string>({
             disabled={o.disabled}
             onClick={() => onChange(o.value)}
             className={cn(
-              "t-title-s inline-flex items-center justify-center gap-2 rounded-pill px-3.25 py-2 transition-colors md:min-w-26.5",
+              "inline-flex items-center justify-center gap-2 rounded-pill transition-all duration-200",
+              compact
+                ? "text-caption px-3 py-1 font-semibold md:min-w-22"
+                : "t-title-s px-3.25 py-2 md:min-w-26.5",
               full && "min-w-0 flex-1",
               selected ? "bg-primary text-white" : "bg-transparent text-muted hover:bg-green-50 active:bg-soft",
               "disabled:text-placeholder disabled:hover:bg-transparent",

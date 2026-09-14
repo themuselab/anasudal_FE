@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { api, type AskResponse, type FeedbackReason, type Rating, type ReasonCode } from "@/lib/api";
-import { Button, Chip, Text } from "@/components/ui";
+import { Chip, Text } from "@/components/ui";
 import { AnswerText } from "@/components/chat/AnswerText";
 import { OtterMark } from "@/components/chat/Bubbles";
 import { cn } from "@/lib/cn";
@@ -11,7 +11,7 @@ import { cn } from "@/lib/cn";
  *  · 말풍선 없이 바탕 위 왼쪽 정렬 본문(Body-L). **굵게** 는 text/strong
  *  · 마지막 줄 끝에 작은 수달
  *  · 아래: 👍 👎 + "이 답변이 어땠나요?" → 누르면 "의견 감사해요", 👎 면 사유 칩 3개
- *  · can_recommend 면 primary 버튼 "네, 추천해주세요"
+ *  · 후속 칩 "네, 추천해주세요" (칩 모양 — 전에 쓰던 진한 버튼 아님)
  */
 export function AnswerBlock({
   res,
@@ -22,8 +22,6 @@ export function AnswerBlock({
   streaming?: boolean;
   onPrompt: (text: string) => void;
 }) {
-  const [primary, ...rest] = res.next_prompts;
-
   return (
     <div className="max-w-[92%] md:max-w-[80%]">
       <div className="prose-answer t-body-l text-body">
@@ -37,14 +35,10 @@ export function AnswerBlock({
 
       {!streaming && res.answer_id && res.fallback_tier > 0 && <FeedbackRow answerId={res.answer_id} />}
 
-      {!streaming && (res.can_recommend || res.next_prompts.length > 0) && (
+      {/* 후속 칩은 전부 같은 모양 — "더 물어볼게요"는 입력창에 치는 것과 같은 동작이라 서버에서 뺐다 */}
+      {!streaming && res.next_prompts.length > 0 && (
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          {res.can_recommend && primary && (
-            <Button size="md" onClick={() => onPrompt(primary)}>
-              {primary}
-            </Button>
-          )}
-          {(res.can_recommend ? rest : res.next_prompts).map((p) => (
+          {res.next_prompts.map((p) => (
             <Chip key={p} onClick={() => onPrompt(p)}>
               {p}
             </Chip>

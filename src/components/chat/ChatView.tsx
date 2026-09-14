@@ -140,7 +140,7 @@ export function ChatView() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 md:px-0">
-      <div className="flex flex-1 flex-col gap-8 py-6 md:py-10">
+      <div className="flex flex-1 flex-col gap-8 pb-2 pt-4 md:pt-6">
         {msgs.map((m, i) => {
           switch (m.role) {
             case "user":
@@ -166,12 +166,15 @@ export function ChatView() {
 
         {showThinking && <Thinking status={status} />}
         <div ref={bottom} />
+
+        {/* 푸터는 대화 영역 맨 아래 — 입력창 영역에 있으면 모바일에서 키보드가 올라와도 남는다 */}
+        <AppFooter className="mt-auto pt-4" />
       </div>
 
-      <div className="sticky bottom-0 bg-base pt-2">
-        <PrivacyNote className="mb-2" />
+      <div className="sticky bottom-0 bg-base pb-3 pt-2">
+        {/* 안내 문구는 첫 입력 전까지만 */}
+        {msgs.length === 0 && <PrivacyNote className="mb-2" />}
         <ChatInput onSend={send} loading={busy} placeholder="수달 AI에게 물어보기" />
-        <AppFooter />
       </div>
     </div>
   );

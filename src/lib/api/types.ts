@@ -36,7 +36,7 @@ export interface InstitutionPage { total: number; items: InstitutionCard[]; page
 
 // ── chat
 export interface Session {
-  session_id: string; region_id: number | null; sido: string | null;
+  session_id: string; region_id: number | null; sido: string | null; sigungu: string | null;
   child_age_months: number | null; expires_at: string;
 }
 export interface Prompt { prompt_id: number; text: string; emoji: string }
