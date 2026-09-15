@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { Splash } from "@/components/layout/Splash";
 import "./globals.css";
 
 // Pretendard Variable — 자체 호스팅(public/fonts). 모든 텍스트가 이 한 폰트를 쓴다.
@@ -27,7 +28,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko" className={pretendard.variable}>
-      <body className="min-h-dvh bg-base text-body antialiased">{children}</body>
+      <body className="min-h-dvh bg-base text-body antialiased">
+        <Splash />
+        {children}
+      </body>
     </html>
   );
 }

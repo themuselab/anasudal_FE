@@ -4,7 +4,7 @@ import { DetailHeader } from "@/components/institution/DetailHeader";
 import { KakaoMap } from "@/components/institution/KakaoMap";
 import { Card, Divider, Tag, Text } from "@/components/ui";
 import { api, ApiError, type InstitutionDetail } from "@/lib/api";
-import { areaShort, pricePerSession } from "@/lib/format";
+import { areaShort, pricePerSession, sortAreas } from "@/lib/format";
 
 /**
  * 기관 상세 (시안 pc/mb-둘러보기_상세)
@@ -32,8 +32,8 @@ export default async function InstitutionPage({ params }: { params: Promise<{ bi
 
         <Text variant="title-s" as="h2" className="mt-5">{d.name}</Text>
         <div className="mt-2 flex flex-wrap gap-2">
-          {d.area_codes.map((code, i) => (
-            <Tag key={code}>{areaShort(code, d.area_names[i])}</Tag>
+          {sortAreas(d.area_codes).map((code) => (
+            <Tag key={code}>{areaShort(code)}</Tag>
           ))}
         </div>
 

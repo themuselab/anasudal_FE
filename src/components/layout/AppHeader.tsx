@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -29,15 +30,25 @@ export function AppHeader() {
       )}
     >
       <div className="flex flex-1 justify-start">
-        {/* 로고는 브랜드 마크 — 본문 스케일과 따로 간다. 모바일 18(시안의 작은 마크) → PC 36(Title-L 데스크톱 값) */}
+        {/* 로고는 브랜드 마크 — 본문 스케일과 따로 간다. 모바일 18(시안의 작은 마크) → PC 36(Title-L 데스크톱 값)
+            수달 마크는 글자 크기를 따라간다 (1.35em) — 줄어들 때 둘이 같이 줄어야 한 덩어리로 보인다 */}
         <Link
           href="/"
           aria-label="안아수달 홈"
           className={cn(
-            "font-bold text-primary transition-all duration-200",
+            "flex items-center gap-1.5 font-bold text-primary transition-all duration-200 md:gap-2",
             shrunk ? "text-body-m md:text-title-m-lg" : "text-title-s md:text-title-l-lg",
           )}
         >
+          <Image
+            src="/logo-otter.png"
+            alt=""
+            width={716}
+            height={684}
+            priority
+            className="w-auto"
+            style={{ height: "1.35em" }}
+          />
           안아수달
         </Link>
       </div>

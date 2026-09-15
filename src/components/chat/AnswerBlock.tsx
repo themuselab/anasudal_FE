@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { api, type AskResponse, type FeedbackReason, type Rating, type ReasonCode } from "@/lib/api";
 import { Chip, Text } from "@/components/ui";
 import { AnswerText } from "@/components/chat/AnswerText";
+import { EvidenceList } from "@/components/chat/EvidenceList";
 import { OtterMark } from "@/components/chat/Bubbles";
 import { cn } from "@/lib/cn";
 
@@ -36,6 +37,10 @@ export function AnswerBlock({
           }
         />
       </div>
+
+      {!streaming && res.answer_id && res.evidence_count > 0 && (
+        <EvidenceList answerId={res.answer_id} count={res.evidence_count} />
+      )}
 
       {!streaming && res.answer_id && res.fallback_tier > 0 && <FeedbackRow answerId={res.answer_id} />}
 

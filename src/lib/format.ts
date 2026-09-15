@@ -40,6 +40,22 @@ export function areaShort(code: string, fallback?: string): string {
   return AREA_SHORT[code] ?? fallback ?? code;
 }
 
+/**
+ * 태그를 보여줄 순서. 서버는 코드 알파벳 순으로 주는데 그대로 자르면 ART·AUDIT·BEHAV 만
+ * 남고 정작 제일 많이 찾는 언어치료가 사라진다. 부모가 먼저 찾는 순서로 다시 세운다.
+ */
+const AREA_ORDER = [
+  "SPEECH", "SENSORY", "PLAY", "BEHAV", "PSYCH", "ART", "MUSIC", "MOTOR", "PSYMOTOR", "AUDIT", "ETC",
+];
+
+export function sortAreas<T extends string>(codes: readonly T[]): T[] {
+  const rank = (c: string) => {
+    const i = AREA_ORDER.indexOf(c);
+    return i === -1 ? AREA_ORDER.length : i;
+  };
+  return [...codes].sort((a, b) => rank(a) - rank(b));
+}
+
 /** 53000 → "회기당 5.3만원" (영역별 단가 한 건) */
 export function pricePerSession(krw: number): string {
   return `회기당 ${man(krw)}만원`;

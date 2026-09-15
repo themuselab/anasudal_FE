@@ -19,7 +19,7 @@ export interface Region { region_id: number; sido: string; sigungu: string; inst
 export type AreaCode = "SPEECH" | "AUDIT" | "ART" | "MUSIC" | "PLAY" | "BEHAV" | "PSYCH" | "SENSORY" | "MOTOR" | "PSYMOTOR" | "ETC";
 
 export interface InstitutionCard {
-  biz_no: string; name: string; sido: string; sigungu: string;
+  biz_no: string; name: string; sido: string; sigungu: string; tel: string | null;
   area_codes: AreaCode[]; area_names: string[];
   price_min: number | null; price_max: number | null; price_year: number | null;
   visit_available: boolean; link_url: string | null; has_own_site: boolean;
@@ -29,7 +29,7 @@ export interface InstitutionPrice {
   price_krw: number; price_year: number; disclosed_at: string;
 }
 export interface InstitutionDetail extends InstitutionCard {
-  address: string | null; tel: string | null; lat: number | null; lon: number | null;
+  address: string | null; lat: number | null; lon: number | null;
   operating_hours: string | null; prices: InstitutionPrice[]; price_note: string;
 }
 export interface InstitutionPage { total: number; items: InstitutionCard[]; page: number; size: number }
