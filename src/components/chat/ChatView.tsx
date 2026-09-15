@@ -19,7 +19,7 @@ type Msg =
   | { role: "ai"; res: AskResponse; streaming?: boolean }
   | { role: "region"; forAnswer: string | null; areaCodes?: string[] }
   | { role: "reco"; res: RecommendResponse }
-  | { role: "screening"; ageMonths: number }
+  | { role: "screening"; ageMonths: number | null }
   | { role: "screenResult"; res: ScreeningResult }
   | { role: "error"; text: string };
 
@@ -138,8 +138,9 @@ export function ChatView() {
       return;
     }
     // 관찰은 생성 없이 화면만 바뀐다 — 안내 한 줄을 남기고 과제 블록을 띄운다
-    if (res.intent === "screening" && res.screen_age_months) {
+    if (res.intent === "screening") {
       setLast({ role: "ai", res });
+      // 월령을 모르면 관찰 블록이 먼저 묻는다 (첫 화면 고정 칩으로 들어온 경우)
       push({ role: "screening", ageMonths: res.screen_age_months });
       return;
     }
