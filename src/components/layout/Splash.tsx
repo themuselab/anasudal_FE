@@ -62,24 +62,26 @@ export function Splash() {
           <br />꼭 맞는 도움을 찾아드려요
         </Text>
 
-        <div className="flex flex-col items-center gap-4 md:gap-5">
-          <Image
-            src="/logo-otter.png"
-            alt=""
-            width={716}
-            height={684}
-            priority
-            className="h-24 w-auto md:h-36"
-          />
-          <Image
-            src="/logo-wordmark.png"
-            alt="안아수달"
-            width={316}
-            height={80}
-            priority
-            className="h-7 w-auto md:h-10"
-          />
-        </div>
+        {/* 마크와 글자 사이 간격까지 한 파일에 들어 있다 — 시안이 정한 비율을 그대로 쓴다.
+            PC·모바일 판을 따로 받아서 둘 다 쓴다 (합쳐도 38KB) */}
+        <Image
+          src="/splash-logo-mb.svg"
+          alt="안아수달"
+          width={200}
+          height={251}
+          priority
+          unoptimized
+          className="h-44 w-auto md:hidden"
+        />
+        <Image
+          src="/splash-logo-pc.svg"
+          alt=""
+          width={280}
+          height={359}
+          priority
+          unoptimized
+          className="hidden h-64 w-auto md:block"
+        />
       </div>
 
       <Text variant="label" tone="placeholder" as="p" className="pb-8 md:pb-10">

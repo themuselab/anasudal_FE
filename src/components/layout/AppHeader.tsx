@@ -32,6 +32,8 @@ export function AppHeader() {
       <div className="flex flex-1 justify-start">
         {/* 로고는 브랜드 마크 — 본문 스케일과 따로 간다. 모바일 18(시안의 작은 마크) → PC 36(Title-L 데스크톱 값)
             두 조각 다 글자 크기(em)를 따라간다 — 스크롤로 헤더가 줄 때 같이 줄어야 한 덩어리로 보인다.
+            SVG 는 unoptimized 로 그대로 내보낸다 — 어차피 크기에 안 묶이고, 최적화를 태우면
+            색이 미세하게 달라져 마크의 크림색 배경이 bg-base 와 어긋난다.
             모바일에선 글자를 빼고 마크만 둔다. 좁은 폭에서 세그먼트와 자리를 다투기 때문. */}
         <Link
           href="/"
@@ -42,20 +44,22 @@ export function AppHeader() {
           )}
         >
           <Image
-            src="/logo-otter.png"
+            src="/logo-mark.svg"
             alt=""
-            width={716}
-            height={684}
+            width={128}
+            height={128}
             priority
+            unoptimized
             className="w-auto"
             style={{ height: "1.35em" }}
           />
           <Image
-            src="/logo-wordmark.png"
+            src="/logo-wordmark.svg"
             alt=""
-            width={316}
-            height={80}
+            width={220}
+            height={70}
             priority
+            unoptimized
             className="hidden w-auto md:block"
             style={{ height: "0.8em" }}
           />
