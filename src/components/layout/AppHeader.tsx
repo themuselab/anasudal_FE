@@ -6,8 +6,12 @@ import { useEffect, useState } from "react";
 import { Segmented, Text } from "@/components/ui";
 import { cn } from "@/lib/cn";
 
-/** 이만큼 내리면 상단 바가 줄어든다 */
-const SHRINK_AT = 24;
+/* 상단 바가 줄었다 펴졌다를 반복하지 않도록 들어갈 때와 나올 때 기준을 따로 둔다.
+   하나로 두면 이렇게 된다 — 줄어들면 상단 바 높이만큼(PC 32px) 문서가 짧아지고,
+   그만큼 scrollY 가 깎여 기준 아래로 내려가면 다시 펴지고, 펴지면 또 넘어선다.
+   두 기준 사이 간격(56px)이 높이 변화(32px)보다 넉넉해야 진동이 멈춘다. */
+const SHRINK_AT = 64;   // 이만큼 내려가면 줄인다
+const EXPAND_AT = 8;    // 이만큼 올라와야 다시 펼친다
 
 /**
  * 상단 바 (시안 pc/mb-채팅 메인)
@@ -87,7 +91,8 @@ function useShrinkOnScroll(): boolean {
   const [shrunk, setShrunk] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setShrunk(window.scrollY > SHRINK_AT);
+    const onScroll = () =>
+      setShrunk((was) => (was ? window.scrollY > EXPAND_AT : window.scrollY > SHRINK_AT));
     window.addEventListener("scroll", onScroll, { passive: true });
     queueMicrotask(onScroll); // 뒤로가기로 스크롤 위치가 복원된 경우
     return () => window.removeEventListener("scroll", onScroll);

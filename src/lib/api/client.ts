@@ -18,7 +18,13 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     res = await fetch(BASE + path, {
       ...init,
-      headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
+      // 본문이 있을 때만 Content-Type 을 붙인다.
+      // GET 에까지 붙이면 단순 요청이 아니게 되어 브라우저가 OPTIONS 프리플라이트를
+      // 먼저 보낸다 — 요청 수와 왕복 시간이 그대로 두 배가 된다. 무한 스크롤처럼
+      // URL 이 매번 달라지는 화면에서는 프리플라이트 캐시도 듣지 않는다.
+      headers: init?.body
+        ? { "Content-Type": "application/json", ...(init?.headers ?? {}) }
+        : init?.headers,
       cache: "no-store",
     });
   } catch (e) {
