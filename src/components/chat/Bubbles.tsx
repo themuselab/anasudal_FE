@@ -27,11 +27,31 @@ export function OtterMark() {
   );
 }
 
-/** 로딩 (시안 pc-채팅 입력 로딩 중) — 수달 아래 점 3개 + 상태 문구 */
+/**
+ * 로딩 (시안 pc-채팅 입력 로딩 중) — 헤엄치는 수달 + 점 3개 + 상태 문구
+ *
+ * unoptimized: next/image 를 거치면 움직이는 GIF 가 첫 프레임짜리 정지 이미지가 된다.
+ * motion-reduce: 움직임을 줄여 달라고 설정한 사람에겐 정지 그림으로 바꾼다 — GIF 는
+ *                CSS 로 멈출 수 없어서 판을 따로 둔다.
+ */
 export function Thinking({ status }: { status: string }) {
   return (
     <div className="flex flex-col items-start gap-2">
-      <Image src="/otter.png" alt="" width={96} height={64} className="h-auto w-18" />
+      <Image
+        src="/otter-loading.gif"
+        alt=""
+        width={380}
+        height={263}
+        unoptimized
+        className="h-auto w-18 motion-reduce:hidden"
+      />
+      <Image
+        src="/otter.png"
+        alt=""
+        width={96}
+        height={64}
+        className="hidden h-auto w-18 motion-reduce:block"
+      />
       <div className="flex items-center gap-2">
         <span className="flex items-center gap-1" aria-hidden>
           {[0, 1, 2].map((i) => (

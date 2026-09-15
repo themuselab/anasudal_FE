@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { palette, semantic, type } from "@/design/tokens";
 import { Badge, Button, Card, Divider, Field, Input, Notice, Tag, Text, Textarea } from "@/components/ui";
+import { Thinking } from "@/components/chat/Bubbles";
 import { ChatInputDemo, ChipDemo, SegmentedDemo } from "./Playground";
 
 export const metadata: Metadata = { title: "디자인 시스템" };
@@ -176,6 +177,10 @@ export default function DesignPage() {
           </p>
           <p>기관을 추천해드릴까요?</p>
         </div>
+      </Section>
+
+      <Section title="답변 로딩" sub="첫 글자가 오기까지. 헤엄치는 수달(GIF) + 점 3개 + 진행 문구">
+        <Thinking status="검증된 자료에서 찾고 있어요" />
       </Section>
 
       <Section title="Numeric" sub="통계 숫자 — tabular-nums 고정폭">
