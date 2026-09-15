@@ -88,7 +88,7 @@ export interface EvidenceList { answer_id: string; items: Evidence[] }
 
 export interface RecommendedInstitution extends InstitutionCard { rank: number; reason: string }
 export interface RecommendResponse {
-  answer_id: string; intro: string; items: RecommendedInstitution[];
+  answer_id: string | null; intro: string; items: RecommendedInstitution[];
   scope_sido: string | null; browse_hint: string;
 }
 

@@ -85,7 +85,9 @@ export const api = {
     prompts: () => get<Prompt[]>("/chat/prompts"),
     ask: (session_id: string, message: string) => post<AskResponse>("/chat/ask", { session_id, message }),
     evidence: (answerId: string) => get<EvidenceList>(`/chat/answers/${answerId}/evidence`),
-    recommend: (p: { session_id: string; answer_id: string; region_id?: number; sido?: string; max_price?: number }) =>
+    /** answer_id(대화에서) 또는 area_codes(관찰 기록에서) 중 하나로 추천한다 */
+    recommend: (p: { session_id: string; answer_id?: string; area_codes?: string[];
+                     region_id?: number; sido?: string; max_price?: number }) =>
       post<RecommendResponse>("/chat/recommend", p),
   },
   screening: {

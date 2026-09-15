@@ -17,7 +17,7 @@ import { PrivacyNote, Thinking, UserBubble } from "@/components/chat/Bubbles";
 type Msg =
   | { role: "user"; text: string }
   | { role: "ai"; res: AskResponse; streaming?: boolean }
-  | { role: "region"; forAnswer: string }
+  | { role: "region"; forAnswer: string | null; areaCodes?: string[] }
   | { role: "reco"; res: RecommendResponse }
   | { role: "screening"; ageMonths: number }
   | { role: "screenResult"; res: ScreeningResult }
@@ -60,18 +60,45 @@ export function ChatView() {
     },
   });
 
-  const recommend = async (answerId: string, region?: Region) => {
+  /** answerId 는 대화에서, areaCodes 는 관찰 기록에서 온다 */
+  const recommend = async (
+    answerId: string | null,
+    region?: Region,
+    areaCodes?: string[],
+  ) => {
     if (!sid) return;
     setBusy(true);
     setStatus("근처 기관 중 조건에 맞는 곳을 찾고 있어요");
     try {
-      const res = await api.chat.recommend({ session_id: sid, answer_id: answerId, region_id: region?.region_id });
+      const res = await api.chat.recommend({
+        session_id: sid,
+        answer_id: answerId ?? undefined,
+        area_codes: areaCodes,
+        region_id: region?.region_id,
+      });
       push({ role: "reco", res });
     } catch (e) {
       push({ role: "error", text: humanize(e) });
     } finally {
       setBusy(false);
     }
+  };
+
+  /** 관찰 기록에서 기관으로. 세션에 지역이 없으면 먼저 묻는다 (대화 흐름과 같은 순서) */
+  const recommendFromScreening = async (areaCodes: string[]) => {
+    if (!sid) return;
+    try {
+      const s = await api.session.get(sid);
+      if (s.region_id == null) {
+        push({ role: "region", forAnswer: null, areaCodes });
+        return;
+      }
+    } catch {
+      /* 세션 조회가 안 되면 지역부터 묻는 쪽이 안전하다 */
+      push({ role: "region", forAnswer: null, areaCodes });
+      return;
+    }
+    await recommend(null, undefined, areaCodes);
   };
 
   const send = async (text: string) => {
@@ -167,7 +194,7 @@ export function ChatView() {
                   key={i}
                   onPick={(r) => {
                     push({ role: "user", text: `${shortLabel(r)}` });
-                    void recommend(m.forAnswer, r);
+                    void recommend(m.forAnswer, r, m.areaCodes);
                   }}
                 />
               );
@@ -186,7 +213,7 @@ export function ChatView() {
                 <ScreeningResultBlock
                   key={i}
                   res={m.res}
-                  onRecommend={() => send("네, 추천해주세요")}
+                  onRecommend={(areaCodes) => void recommendFromScreening(areaCodes)}
                 />
               );
           }
