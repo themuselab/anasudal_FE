@@ -71,9 +71,14 @@ export function Splash() {
             priority
             className="h-24 w-auto md:h-36"
           />
-          <Text variant="title-l" as="p" tone="primary">
-            안아수달
-          </Text>
+          <Image
+            src="/logo-wordmark.png"
+            alt="안아수달"
+            width={316}
+            height={80}
+            priority
+            className="h-7 w-auto md:h-10"
+          />
         </div>
       </div>
 

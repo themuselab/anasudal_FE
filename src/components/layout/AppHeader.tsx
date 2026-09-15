@@ -31,12 +31,13 @@ export function AppHeader() {
     >
       <div className="flex flex-1 justify-start">
         {/* 로고는 브랜드 마크 — 본문 스케일과 따로 간다. 모바일 18(시안의 작은 마크) → PC 36(Title-L 데스크톱 값)
-            수달 마크는 글자 크기를 따라간다 (1.35em) — 줄어들 때 둘이 같이 줄어야 한 덩어리로 보인다 */}
+            두 조각 다 글자 크기(em)를 따라간다 — 스크롤로 헤더가 줄 때 같이 줄어야 한 덩어리로 보인다.
+            모바일에선 글자를 빼고 마크만 둔다. 좁은 폭에서 세그먼트와 자리를 다투기 때문. */}
         <Link
           href="/"
           aria-label="안아수달 홈"
           className={cn(
-            "flex items-center gap-1.5 font-bold text-primary transition-all duration-200 md:gap-2",
+            "flex items-center gap-1.5 transition-all duration-200 md:gap-2",
             shrunk ? "text-body-m md:text-title-m-lg" : "text-title-s md:text-title-l-lg",
           )}
         >
@@ -49,7 +50,15 @@ export function AppHeader() {
             className="w-auto"
             style={{ height: "1.35em" }}
           />
-          안아수달
+          <Image
+            src="/logo-wordmark.png"
+            alt=""
+            width={316}
+            height={80}
+            priority
+            className="hidden w-auto md:block"
+            style={{ height: "0.8em" }}
+          />
         </Link>
       </div>
 
