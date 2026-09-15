@@ -1,7 +1,8 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { api, humanize, type AskResponse, type RecommendResponse, type Region } from "@/lib/api";
+import { api, humanize, type AskResponse, type RecommendResponse, type Region,
+  type ScreeningResult } from "@/lib/api";
 import { askStream } from "@/lib/api/stream";
 import { loadMessages, saveMessages } from "@/lib/session";
 import { ChatInput, Notice } from "@/components/ui";
@@ -9,6 +10,8 @@ import { AppFooter } from "@/components/layout/AppHeader";
 import { AnswerBlock } from "@/components/chat/AnswerBlock";
 import { RecommendBlock } from "@/components/chat/RecommendBlock";
 import { RegionPicker } from "@/components/chat/RegionPicker";
+import { ScreeningBlock } from "@/components/chat/ScreeningBlock";
+import { ScreeningResultBlock } from "@/components/chat/ScreeningResultBlock";
 import { PrivacyNote, Thinking, UserBubble } from "@/components/chat/Bubbles";
 
 type Msg =
@@ -16,6 +19,8 @@ type Msg =
   | { role: "ai"; res: AskResponse; streaming?: boolean }
   | { role: "region"; forAnswer: string }
   | { role: "reco"; res: RecommendResponse }
+  | { role: "screening"; ageMonths: number }
+  | { role: "screenResult"; res: ScreeningResult }
   | { role: "error"; text: string };
 
 /**
@@ -51,6 +56,7 @@ export function ChatView() {
     res: {
       answer_id: null, intent: "answer", text, highlights: [], areas: [], evidence_count: 0,
       fallback_tier: 0, can_recommend: false, ask_region: false, recommend_for: null, next_prompts: [],
+      screen_age_months: null,
     },
   });
 
@@ -102,6 +108,12 @@ export function ChatView() {
     }
     if (res.intent === "recommend" && res.recommend_for) {
       await recommend(res.recommend_for);
+      return;
+    }
+    // 관찰은 생성 없이 화면만 바뀐다 — 안내 한 줄을 남기고 과제 블록을 띄운다
+    if (res.intent === "screening" && res.screen_age_months) {
+      setLast({ role: "ai", res });
+      push({ role: "screening", ageMonths: res.screen_age_months });
       return;
     }
     setLast({ role: "ai", res });
@@ -161,6 +173,22 @@ export function ChatView() {
               );
             case "reco":
               return <RecommendBlock key={i} res={m.res} />;
+            case "screening":
+              return (
+                <ScreeningBlock
+                  key={i}
+                  ageMonths={m.ageMonths}
+                  onDone={(res) => push({ role: "screenResult", res })}
+                />
+              );
+            case "screenResult":
+              return (
+                <ScreeningResultBlock
+                  key={i}
+                  res={m.res}
+                  onRecommend={() => send("네, 추천해주세요")}
+                />
+              );
           }
         })}
 

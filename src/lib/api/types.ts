@@ -42,7 +42,8 @@ export interface Session {
 export interface Prompt { prompt_id: number; text: string; emoji: string }
 export interface AreaPriority { area_code: AreaCode; area_name: string; priority: 1 | 2 | 3 }
 
-export type Intent = "answer" | "diagnosis" | "out_of_scope" | "recommend" | "pick_region" | "need_context";
+export type Intent =
+  | "answer" | "diagnosis" | "out_of_scope" | "recommend" | "pick_region" | "need_context" | "screening";
 
 export interface AskResponse {
   answer_id: string | null;
@@ -56,6 +57,27 @@ export interface AskResponse {
   ask_region: boolean;
   recommend_for: string | null;
   next_prompts: string[];
+  /** 조기 관찰을 이어서 할 수 있는 월령이면 그 값. null 이면 칩을 띄우지 않는다 */
+  screen_age_months: number | null;
+}
+
+// ── 조기 관찰 (같이 살펴보기) — /v2
+export interface ScreeningStep { step_no: number; script: string; wait_sec: number }
+export interface ScreeningOption { option_no: number; label: string }
+export interface ScreeningTask {
+  task_code: string; title: string; tool: string | null; skippable: boolean;
+  observes: string; steps: ScreeningStep[]; options: ScreeningOption[];
+}
+export interface ScreeningTaskSet { child_age_months: number; tools: string[]; tasks: ScreeningTask[] }
+export interface ScreeningObservation {
+  task_code: string; title: string; observes: string; label: string; needs_attention: boolean;
+}
+export interface ScreeningResult {
+  result_token: string; child_age_months: number;
+  done_count: number; skipped_count: number;
+  observations: ScreeningObservation[];
+  attention: string[]; area_codes: AreaCode[];
+  headline: string; note: string; suggest_visit: boolean; expires_at: string;
 }
 export interface Evidence {
   chunk_id: string; chunk_type: string; content: string; publisher: string;

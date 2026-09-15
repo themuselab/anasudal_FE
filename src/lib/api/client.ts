@@ -1,6 +1,7 @@
 import type {
   ApiEnvelope, AskResponse, ErrorCode, EvidenceList, FeedbackOut, FeedbackReason, InstitutionDetail,
-  InstitutionPage, Prompt, Rating, ReasonCode, RecommendResponse, Region, SearchResponse, Session, Sido,
+  InstitutionPage, Prompt, Rating, ReasonCode, RecommendResponse, Region, ScreeningResult,
+  ScreeningTaskSet, SearchResponse, Session, Sido,
 } from "./types";
 
 /** 봉투를 벗기고 실패는 ApiError 로 던진다. 화면은 code 로 분기, message 는 그대로 보여줘도 됨. */
@@ -11,12 +12,15 @@ export class ApiError extends Error {
   }
 }
 
-const BASE = (process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000").replace(/\/$/, "") + "/v1";
+const ROOT = (process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000").replace(/\/$/, "");
+const BASE = ROOT + "/v1";
+// 조기 관찰만 v2. 쓰임과 수명이 달라 v1 과 따로 간다
+const BASE_V2 = ROOT + "/v2";
 
-async function call<T>(path: string, init?: RequestInit): Promise<T> {
+async function call<T>(path: string, init?: RequestInit, base: string = BASE): Promise<T> {
   let res: Response;
   try {
-    res = await fetch(BASE + path, {
+    res = await fetch(base + path, {
       ...init,
       // 본문이 있을 때만 Content-Type 을 붙인다.
       // GET 에까지 붙이면 단순 요청이 아니게 되어 브라우저가 OPTIONS 프리플라이트를
@@ -38,6 +42,18 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   if (!body.success) throw new ApiError(res.status, body.error.code, body.error.message, body.error.details);
   return body.data;
 }
+
+const qstr = (params?: Record<string, string | number | undefined | null>) => {
+  if (!params) return "";
+  const qs = Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== "")
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`).join("&");
+  return qs ? "?" + qs : "";
+};
+const getV2 = <T,>(path: string, params?: Record<string, string | number | undefined | null>) =>
+  call<T>(path + qstr(params), undefined, BASE_V2);
+const postV2 = <T,>(path: string, body: unknown) =>
+  call<T>(path, { method: "POST", body: JSON.stringify(body) }, BASE_V2);
+const delV2 = (path: string) => call<null>(path, { method: "DELETE" }, BASE_V2);
 
 const get = <T,>(path: string, params?: Record<string, string | number | undefined | null>) => {
   const qs = params
@@ -71,6 +87,13 @@ export const api = {
     evidence: (answerId: string) => get<EvidenceList>(`/chat/answers/${answerId}/evidence`),
     recommend: (p: { session_id: string; answer_id: string; region_id?: number; sido?: string; max_price?: number }) =>
       post<RecommendResponse>("/chat/recommend", p),
+  },
+  screening: {
+    tasks: (child_age_months: number) => getV2<ScreeningTaskSet>("/screening/tasks", { child_age_months }),
+    save: (p: { child_age_months: number; answers: { task_code: string; option_no: number }[]; skipped: string[] }) =>
+      postV2<ScreeningResult>("/screening/results", p),
+    result: (token: string) => getV2<ScreeningResult>(`/screening/results/${token}`),
+    remove: (token: string) => delV2(`/screening/results/${token}`),
   },
   feedback: {
     reasons: () => get<FeedbackReason[]>("/feedback/reasons"),
