@@ -14,6 +14,14 @@ import { ScreeningBlock } from "@/components/chat/ScreeningBlock";
 import { ScreeningResultBlock } from "@/components/chat/ScreeningResultBlock";
 import { PrivacyNote, Thinking, UserBubble } from "@/components/chat/Bubbles";
 
+/**
+ * 기다리는 동안 보여줄 문구. 실제로 일어나는 순서를 부모가 알아들을 말로 옮긴 것이다.
+ * "임베딩 중", "벡터 검색 중" 같은 말은 여기서 아무 뜻이 없다.
+ *   ① 질문을 읽는다(임베딩) → ② 자료를 찾는다(검색) → ③ 근거를 읽고 답을 쓴다(생성)
+ */
+const WAITING = ["아이 이야기를 읽고 있어요", "검증된 자료를 찾고 있어요"] as const;
+const WAITING_STEP_MS = 1400;
+
 type Msg =
   | { role: "user"; text: string }
   | { role: "ai"; res: AskResponse; streaming?: boolean }
@@ -36,7 +44,8 @@ export function ChatView() {
 
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState("검증된 자료에서 찾고 있어요");
+  const [status, setStatus] = useState<string>(WAITING[0]);
+  const stage = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bottom = useRef<HTMLDivElement>(null);
   const started = useRef(false);
   const abort = useRef<AbortController | null>(null);
@@ -68,7 +77,7 @@ export function ChatView() {
   ) => {
     if (!sid) return;
     setBusy(true);
-    setStatus("근처 기관 중 조건에 맞는 곳을 찾고 있어요");
+    setStatus("가까운 기관을 찾고 있어요");
     try {
       const res = await api.chat.recommend({
         session_id: sid,
@@ -105,7 +114,9 @@ export function ChatView() {
     if (!sid || busy) return;
     push({ role: "user", text });
     setBusy(true);
-    setStatus("검증된 자료에서 찾고 있어요");
+    setStatus(WAITING[0]);
+    if (stage.current) clearTimeout(stage.current);
+    stage.current = setTimeout(() => setStatus(WAITING[1]), WAITING_STEP_MS);
 
     let acc = "";
     let done: AskResponse | null = null;
@@ -115,8 +126,10 @@ export function ChatView() {
       sid,
       text,
       {
-        onMeta: (m) =>
-          setStatus(m.evidence_count ? `근거 자료 ${m.evidence_count}건으로 답변을 쓰고 있어요` : "답변을 쓰고 있어요"),
+        onMeta: (m) => {
+          if (stage.current) clearTimeout(stage.current);   // 실제 진행이 앞섰으니 예고 타이머는 끈다
+          setStatus(m.evidence_count ? `자료 ${m.evidence_count}건을 읽고 답을 쓰고 있어요` : "답을 쓰고 있어요");
+        },
         onDelta: (t) => { acc += t; setLast(streamingShell(acc)); },
         onDone: (res) => { done = res; },
         onError: (e) => setLast({ role: "error", text: humanize(e) }),
@@ -124,6 +137,7 @@ export function ChatView() {
       abort.current.signal,
     );
 
+    if (stage.current) clearTimeout(stage.current);
     setBusy(false);
     if (!done) return;
     const res: AskResponse = done;

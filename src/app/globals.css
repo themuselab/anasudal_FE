@@ -77,6 +77,18 @@
   --shadow-card-focus: 0 2px 12px rgba(27, 42, 39, 0.10);
 }
 
+/* ── 로딩 문구가 바뀔 때 부드럽게 들어온다. 움직임을 줄여 달라고 했으면 그냥 나타난다 */
+@keyframes anasudal-fade-in {
+  from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 1; transform: none; }
+}
+@utility fade-in {
+  animation: anasudal-fade-in 0.35s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fade-in { animation: none; }
+}
+
 /* ── 타이포 유틸리티: 모바일 → md 에서 Desktop. 색은 넣지 않는다 (Text 컴포넌트 tone 이 정함) */
 @utility t-display    { @apply text-display    md:text-display-lg; }
 @utility t-title-l    { @apply text-title-l    md:text-title-l-lg; }

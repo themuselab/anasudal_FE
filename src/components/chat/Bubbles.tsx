@@ -28,7 +28,11 @@ export function OtterMark() {
 }
 
 /**
- * 로딩 (시안 pc-채팅 입력 로딩 중) — 헤엄치는 수달 + 점 3개 + 상태 문구
+ * 로딩 (시안 pc-채팅 입력 로딩 중) — 헤엄치는 수달 옆에 지금 뭘 하는지 한 줄
+ *
+ * 점 3개를 빼고 수달이 그 자리를 채운다. 점은 "뭔가 돌아간다"만 말하지만 수달은
+ * 기다리는 동안 볼 게 된다. 문구는 단계마다 바뀌는데, 부모가 알아들을 말로만 쓴다 —
+ * "임베딩 중", "검색 중" 같은 말은 여기서 아무 뜻이 없다.
  *
  * unoptimized: next/image 를 거치면 움직이는 GIF 가 첫 프레임짜리 정지 이미지가 된다.
  * motion-reduce: 움직임을 줄여 달라고 설정한 사람에겐 정지 그림으로 바꾼다 — GIF 는
@@ -36,34 +40,26 @@ export function OtterMark() {
  */
 export function Thinking({ status }: { status: string }) {
   return (
-    <div className="flex flex-col items-start gap-2">
+    <div className="flex items-center gap-3" role="status" aria-live="polite">
       <Image
         src="/otter-loading.gif"
         alt=""
         width={380}
         height={263}
         unoptimized
-        className="h-auto w-18 motion-reduce:hidden"
+        className="h-auto w-16 shrink-0 motion-reduce:hidden"
       />
       <Image
         src="/otter.png"
         alt=""
         width={96}
         height={64}
-        className="hidden h-auto w-18 motion-reduce:block"
+        className="hidden h-auto w-16 shrink-0 motion-reduce:block"
       />
-      <div className="flex items-center gap-2">
-        <span className="flex items-center gap-1" aria-hidden>
-          {[0, 1, 2].map((i) => (
-            <span
-              key={i}
-              className="size-1.5 animate-pulse rounded-pill bg-strong"
-              style={{ animationDelay: `${i * 160}ms` }}
-            />
-          ))}
-        </span>
-        <span className="t-caption text-muted">{status}</span>
-      </div>
+      {/* key 를 문구로 둬서 바뀔 때마다 부드럽게 들어온다 */}
+      <span key={status} className="t-caption fade-in text-muted">
+        {status}
+      </span>
     </div>
   );
 }
