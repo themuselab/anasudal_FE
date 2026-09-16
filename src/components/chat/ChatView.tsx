@@ -5,9 +5,10 @@ import { api, humanize, type AskResponse, type RecommendResponse, type Region,
   type ScreeningResult } from "@/lib/api";
 import { askStream } from "@/lib/api/stream";
 import { loadMessages, saveMessages } from "@/lib/session";
-import { ChatInput, Notice } from "@/components/ui";
+import { ChatInput } from "@/components/ui";
 import { AppFooter } from "@/components/layout/AppHeader";
 import { AnswerBlock } from "@/components/chat/AnswerBlock";
+import { ErrorBlock } from "@/components/chat/ErrorBlock";
 import { RecommendBlock } from "@/components/chat/RecommendBlock";
 import { RegionPicker } from "@/components/chat/RegionPicker";
 import { ScreeningBlock } from "@/components/chat/ScreeningBlock";
@@ -42,6 +43,11 @@ function readAgeMonths(text: string): number | null {
   return months !== null && months >= 18 && months <= 48 ? months : null;
 }
 
+/** 막힌 일을 그대로 되풀이하기 위한 정보. sessionStorage 에 들어가므로 순수 데이터만 담는다 */
+type Retry =
+  | { kind: "ask"; text: string }
+  | { kind: "reco"; answerId: string | null; region?: Region; areaCodes?: string[] };
+
 type Msg =
   | { role: "user"; text: string }
   | { role: "ai"; res: AskResponse; streaming?: boolean }
@@ -49,7 +55,7 @@ type Msg =
   | { role: "reco"; res: RecommendResponse }
   | { role: "screening"; ageMonths: number }
   | { role: "screenResult"; res: ScreeningResult }
-  | { role: "error"; text: string };
+  | { role: "error"; text: string; retry?: Retry };
 
 /**
  * 대화 화면 (시안 pc-채팅 입력 로딩 중 / pc-답변 / pc-답변-기관 노출)
@@ -109,7 +115,7 @@ export function ChatView() {
       });
       push({ role: "reco", res });
     } catch (e) {
-      push({ role: "error", text: humanize(e) });
+      push({ role: "error", text: humanize(e), retry: { kind: "reco", answerId, region, areaCodes } });
     } finally {
       setBusy(false);
     }
@@ -132,21 +138,22 @@ export function ChatView() {
     await recommend(null, undefined, areaCodes);
   };
 
-  const send = async (text: string) => {
+  /** echo=false 는 다시 시도 — 질문 말풍선이 이미 위에 남아 있어 또 띄우지 않는다 */
+  const send = async (text: string, echo = true) => {
     if (!sid || busy) return;
 
     if (askingAge) {
       const months = readAgeMonths(text);
       setAskingAge(false);
       if (months !== null) {
-        push({ role: "user", text });
+        if (echo) push({ role: "user", text });
         push({ role: "screening", ageMonths: months });
         return;                   // 나이만 받으면 되니 서버에 다시 묻지 않는다
       }
       // 나이가 아니면 평소처럼 질문으로 받는다
     }
 
-    push({ role: "user", text });
+    if (echo) push({ role: "user", text });
     setBusy(true);
     setStatus(WAITING[0]);
     if (stage.current) clearTimeout(stage.current);
@@ -166,7 +173,7 @@ export function ChatView() {
         },
         onDelta: (t) => { acc += t; setLast(streamingShell(acc)); },
         onDone: (res) => { done = res; },
-        onError: (e) => setLast({ role: "error", text: humanize(e) }),
+        onError: (e) => setLast({ role: "error", text: humanize(e), retry: { kind: "ask", text } }),
       },
       abort.current.signal,
     );
@@ -196,6 +203,20 @@ export function ChatView() {
       return;
     }
     setLast({ role: "ai", res });
+  };
+
+  /** 실패 메시지를 걷어내고 막혔던 일을 그대로 다시 건다 */
+  const retry = (r: Retry) => {
+    setMsgs((prev) => (prev.at(-1)?.role === "error" ? prev.slice(0, -1) : prev));
+    if (r.kind === "ask") void send(r.text, false);
+    else void recommend(r.answerId, r.region, r.areaCodes);
+  };
+
+  /** 처음으로 — 대화를 비우고 첫 화면으로. 보관본까지 지운다 */
+  const reset = () => {
+    if (sid) saveMessages(sid, []);
+    setMsgs([]);
+    router.push("/");
   };
 
   useEffect(() => {
@@ -237,7 +258,14 @@ export function ChatView() {
             case "user":
               return <UserBubble key={i} text={m.text} />;
             case "error":
-              return <Notice key={i} tone="danger">{m.text}</Notice>;
+              return (
+                <ErrorBlock
+                  key={i}
+                  text={m.text}
+                  onRetry={m.retry ? () => retry(m.retry!) : undefined}
+                  onReset={reset}
+                />
+              );
             case "ai":
               return <AnswerBlock key={i} res={m.res} streaming={m.streaming} onPrompt={send} />;
             case "region":

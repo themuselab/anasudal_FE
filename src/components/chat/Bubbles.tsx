@@ -12,15 +12,17 @@ export function UserBubble({ text }: { text: string }) {
   );
 }
 
-/** 답변 문장 끝에 붙는 작은 수달 (시안: "기관을 추천해드릴까요? 🦦")
- *  높이를 1.2em 으로 둬서 본문 글자 크기를 그대로 따라간다 — 토큰이 아니라 본문에 종속된 값 */
+/** 답변 문장 끝에 붙는 작은 수달 — 고개를 내밀고 묻는 모습 (시안 pc-답변)
+ *  높이를 em 으로 둬서 본문 글자 크기를 그대로 따라간다 — 토큰이 아니라 본문에 종속된 값.
+ *  그림의 투명 여백은 미리 잘라뒀다. 여백이 남아 있으면 같은 em 이어도 수달이 작아 보이고,
+ *  그걸 키우려 em 을 올리면 이 줄만 줄 간격이 벌어진다. */
 export function OtterMark() {
   return (
     <Image
-      src="/otter.png"
+      src="/otter-ask.png"
       alt=""
-      width={45}
-      height={30}
+      width={61}
+      height={88}
       className="ml-1.5 inline-block w-auto align-text-bottom"
       style={{ height: "1.2em" }}
     />

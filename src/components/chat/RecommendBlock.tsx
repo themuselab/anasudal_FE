@@ -25,7 +25,7 @@ export function RecommendBlock({ res }: { res: RecommendResponse }) {
 function BrowseBanner() {
   return (
     <div className="flex items-center gap-3 rounded-xl bg-soft p-4 md:gap-4 md:p-5">
-      <Image src="/otter.png" alt="" width={80} height={53} className="h-auto w-12 shrink-0 md:w-14" />
+      <Image src="/otter-fish.png" alt="" width={162} height={167} className="h-auto w-12 shrink-0 md:w-14" />
       <div className="min-w-0 flex-1">
         <Text variant="title-s">다른 지역의 기관도 찾아보고 싶나요?</Text>
         <Text variant="caption" className="mt-0.5">둘러보기에서 지역을 설정해 더 많은 기관을 확인해요</Text>
