@@ -4,6 +4,7 @@ import { useState } from "react";
 import { api, type ScreeningResult } from "@/lib/api";
 import { Button, Card, Notice, Text } from "@/components/ui";
 import { areaShort, sortAreas } from "@/lib/format";
+import { kakaoReady, shareRecord } from "@/lib/kakaoShare";
 import { cn } from "@/lib/cn";
 
 /**
@@ -18,6 +19,7 @@ export function ScreeningResultBlock({
   onRecommend?: (areaCodes: string[]) => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const [shareFailed, setShareFailed] = useState(false);
   const [removed, setRemoved] = useState(false);
   const link = typeof window === "undefined" ? "" : `${window.location.origin}/r/${res.result_token}`;
 
@@ -29,6 +31,12 @@ export function ScreeningResultBlock({
     } catch {
       /* 클립보드가 막힌 브라우저 — 링크는 아래에 그대로 보인다 */
     }
+  };
+
+  const share = async () => {
+    if (await shareRecord(link)) return;
+    setShareFailed(true);        // 도메인 미등록·앱 없음 — 링크 복사로 넘어간다
+    await copy();
   };
 
   const remove = async () => {
@@ -87,7 +95,21 @@ export function ScreeningResultBlock({
         </Text>
 
         <div className="mt-3 flex flex-col gap-2">
+          {kakaoReady() && (
+            <button
+              type="button"
+              onClick={share}
+              className="t-body-m flex h-12 items-center justify-center gap-2 rounded-md bg-kakao font-semibold text-kakao-ink transition-opacity hover:opacity-90"
+            >
+              카카오톡으로 보내기
+            </button>
+          )}
           <Button onClick={copy} variant="outline">{copied ? "링크를 복사했어요" : "링크 복사"}</Button>
+          {shareFailed && (
+            <Text variant="caption" tone="placeholder" as="p">
+              카카오톡으로 보내지 못해 링크를 복사했어요. 붙여넣어 보내주세요.
+            </Text>
+          )}
           <Text variant="label" as="p" tone="placeholder" className="break-all">{link}</Text>
         </div>
 

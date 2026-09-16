@@ -67,6 +67,10 @@
   --text-numeric-xl: 40px;   --text-numeric-xl--line-height: 44px;   --text-numeric-xl--letter-spacing: 0;         --text-numeric-xl--font-weight: 700;
   --text-numeric-xl-lg: 56px;--text-numeric-xl-lg--line-height: 60px;--text-numeric-xl-lg--letter-spacing: 0;         --text-numeric-xl-lg--font-weight: 700;
 
+  /* ── 카카오 브랜드색. 우리 팔레트가 아니라 카카오가 정한 값이라 바꾸면 안 된다 */
+  --color-kakao:     #FEE500;
+  --color-kakao-ink: #191600;
+
   /* ── 라운드·그림자 */
   --radius-sm: 8px;
   --radius-md: 12px;
