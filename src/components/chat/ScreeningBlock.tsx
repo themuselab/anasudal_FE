@@ -8,21 +8,19 @@ import { cn } from "@/lib/cn";
 /**
  * 같이 살펴보기 — 대화 안에서 과제를 하나씩 해본다.
  *
- * 별도 화면으로 빼지 않은 이유: 월령은 이미 대화에서 알고 있고, 말풍선과 칩이
- * 그대로 쓰인다. 동의·연령·준비물 화면을 따로 만들 필요가 없다.
+ * 별도 화면으로 빼지 않은 이유: 말풍선과 칩이 그대로 쓰인다. 동의·연령·준비물 화면을
+ * 따로 만들 필요가 없다. 월령을 모르면 대화로 먼저 묻고(ChatView), 답을 받아서 들어온다.
  *
  * 대사는 5초 간격으로 하나씩 열리지만 선택지는 처음부터 누를 수 있다.
  * 아이가 첫 번에 반응하면 부모가 기다릴 이유가 없다.
  */
 export function ScreeningBlock({
-  ageMonths: known,
+  ageMonths,
   onDone,
 }: {
-  /** 대화에서 이미 알아낸 월령. 첫 화면 고정 칩으로 들어오면 모를 수 있다 */
-  ageMonths: number | null;
+  ageMonths: number;
   onDone: (res: ScreeningResult) => void;
 }) {
-  const [ageMonths, setAgeMonths] = useState<number | null>(known);
   const [set, setSet] = useState<ScreeningTaskSet | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [started, setStarted] = useState(false);
@@ -32,7 +30,6 @@ export function ScreeningBlock({
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (ageMonths === null) return;      // 월령을 물어보는 중
     let alive = true;
     api.screening
       .tasks(ageMonths)
@@ -47,7 +44,6 @@ export function ScreeningBlock({
   ) => {
     setSaving(true);
     try {
-      if (ageMonths === null) return;
       onDone(await api.screening.save({ child_age_months: ageMonths, answers: done, skipped: skip }));
     } catch (e) {
       setError(humanize(e));
@@ -64,7 +60,6 @@ export function ScreeningBlock({
   };
 
   if (error) return <Notice tone="danger">{error}</Notice>;
-  if (ageMonths === null) return <AgeStep onPick={setAgeMonths} />;
   if (!set) return <Text variant="caption">살펴볼 것을 준비하고 있어요…</Text>;
 
   if (!started) {
@@ -189,61 +184,6 @@ function TaskCard({
           </Chip>
         </div>
       )}
-    </Card>
-  );
-}
-
-
-/** 월령 묻기 — 첫 화면 고정 칩처럼 나이를 모르고 들어왔을 때만 나온다. */
-function AgeStep({ onPick }: { onPick: (months: number) => void }) {
-  const [months, setMonths] = useState(30);
-  return (
-    <Card padding="lg" className="rounded-xl">
-      <Text variant="title-s" as="h3">아이가 몇 개월인가요?</Text>
-      <Text variant="caption" tone="body" className="mt-1">
-        월령에 따라 해볼 것이 달라져요. 18개월부터 48개월까지 살펴볼 수 있어요.
-      </Text>
-
-      <div className="mt-4 flex items-center justify-center gap-4">
-        <button
-          type="button"
-          aria-label="한 달 줄이기"
-          onClick={() => setMonths((m) => Math.max(18, m - 1))}
-          className="grid size-10 place-items-center rounded-pill bg-sunken text-strong transition-colors hover:bg-green-100"
-        >
-          −
-        </button>
-        <div className="flex min-w-24 items-baseline justify-center gap-1.5">
-          <span className="t-numeric-xl text-strong">{months}</span>
-          <Text variant="caption" as="span">개월</Text>
-        </div>
-        <button
-          type="button"
-          aria-label="한 달 늘리기"
-          onClick={() => setMonths((m) => Math.min(48, m + 1))}
-          className="grid size-10 place-items-center rounded-pill bg-sunken text-strong transition-colors hover:bg-green-100"
-        >
-          +
-        </button>
-      </div>
-      <Text variant="caption" className="mt-1 text-center">
-        만 {Math.floor(months / 12)}년 {months % 12}개월
-      </Text>
-
-      <label htmlFor="screening-age" className="sr-only">아이 월령</label>
-      <input
-        id="screening-age"
-        type="range"
-        min={18}
-        max={48}
-        value={months}
-        onChange={(e) => setMonths(Number(e.target.value))}
-        className="mt-4 w-full accent-primary"
-      />
-
-      <div className="mt-5">
-        <Button onClick={() => onPick(months)}>이 나이로 시작하기</Button>
-      </div>
     </Card>
   );
 }

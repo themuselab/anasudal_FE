@@ -22,12 +22,32 @@ import { PrivacyNote, Thinking, UserBubble } from "@/components/chat/Bubbles";
 const WAITING = ["아이 이야기를 읽고 있어요", "검증된 자료를 찾고 있어요"] as const;
 const WAITING_STEP_MS = 1400;
 
+/**
+ * "몇 개월인가요?" 에 대한 답을 읽는다. AI 가 방금 물은 직후에만 쓰기 때문에
+ * "30" 같은 맨숫자도 개월로 본다 — 평소 대화에서 이렇게 읽으면 "3가지를 못 해요" 를
+ * 나이로 오해하지만, 여기서는 나이를 묻고 받은 답이다.
+ */
+function readAgeMonths(text: string): number | null {
+  const t = text.replace(/\s+/g, " ");
+  const y = /(\d{1,2})\s*(?:살|세|년)/.exec(t);
+  const m = /(\d{1,3})\s*개월/.exec(t);
+  let months: number | null = null;
+  if (y && m) months = Number(y[1]) * 12 + Number(m[1]);
+  else if (m) months = Number(m[1]);
+  else if (y) months = Number(y[1]) * 12;
+  else {
+    const bare = /^\s*(\d{1,3})\s*$/.exec(t);
+    if (bare) months = Number(bare[1]);
+  }
+  return months !== null && months >= 18 && months <= 48 ? months : null;
+}
+
 type Msg =
   | { role: "user"; text: string }
   | { role: "ai"; res: AskResponse; streaming?: boolean }
   | { role: "region"; forAnswer: string | null; areaCodes?: string[] }
   | { role: "reco"; res: RecommendResponse }
-  | { role: "screening"; ageMonths: number | null }
+  | { role: "screening"; ageMonths: number }
   | { role: "screenResult"; res: ScreeningResult }
   | { role: "error"; text: string };
 
@@ -46,6 +66,8 @@ export function ChatView() {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string>(WAITING[0]);
   const stage = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // AI 가 월령을 물어본 직후인가 — 다음 입력을 나이로 읽는다
+  const [askingAge, setAskingAge] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
   const started = useRef(false);
   const abort = useRef<AbortController | null>(null);
@@ -112,6 +134,18 @@ export function ChatView() {
 
   const send = async (text: string) => {
     if (!sid || busy) return;
+
+    if (askingAge) {
+      const months = readAgeMonths(text);
+      setAskingAge(false);
+      if (months !== null) {
+        push({ role: "user", text });
+        push({ role: "screening", ageMonths: months });
+        return;                   // 나이만 받으면 되니 서버에 다시 묻지 않는다
+      }
+      // 나이가 아니면 평소처럼 질문으로 받는다
+    }
+
     push({ role: "user", text });
     setBusy(true);
     setStatus(WAITING[0]);
@@ -154,7 +188,10 @@ export function ChatView() {
     // 관찰은 생성 없이 화면만 바뀐다 — 안내 한 줄을 남기고 과제 블록을 띄운다
     if (res.intent === "screening") {
       setLast({ role: "ai", res });
-      // 월령을 모르면 관찰 블록이 먼저 묻는다 (첫 화면 고정 칩으로 들어온 경우)
+      if (res.screen_age_months === null) {
+        setAskingAge(true);       // 다음 입력을 나이로 읽는다
+        return;
+      }
       push({ role: "screening", ageMonths: res.screen_age_months });
       return;
     }
