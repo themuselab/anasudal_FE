@@ -11,7 +11,7 @@ const SIZE = 20;
 /**
  * 둘러보기 (시안 pc/mb-둘러보기 메인 · 지역 설정 · 검색창 입력 · 필터결과 없음)
  *  [지역 설정 ▾] [🔍 기관 이름 검색하기]
- *  총 N곳 · [추천순] [초기화]
+ *  총 N곳 · [초기화]
  *  기관 카드 — 무한 스크롤 + 창 스크롤 가상화 (InstitutionList)
  */
 export function BrowseView() {
@@ -94,17 +94,14 @@ export function BrowseView() {
 
       <div className="mt-4 flex items-center justify-between gap-3">
         <Text variant="caption" as="p">총 {total.toLocaleString()}곳</Text>
-        <div className="flex items-center gap-2">
-          <span className="t-caption inline-flex h-8 items-center rounded-pill bg-primary px-3 text-white">추천순</span>
-          <button
-            type="button"
-            onClick={reset}
-            disabled={!dirty}
-            className="t-caption inline-flex h-8 items-center rounded-pill px-3 text-muted transition-colors hover:bg-green-50 hover:text-strong disabled:text-placeholder disabled:hover:bg-transparent"
-          >
-            초기화
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={reset}
+          disabled={!dirty}
+          className="t-caption inline-flex h-8 items-center rounded-pill px-3 text-muted transition-colors hover:bg-green-50 hover:text-strong disabled:text-placeholder disabled:hover:bg-transparent"
+        >
+          초기화
+        </button>
       </div>
 
       {error && <div className="mt-4"><Notice tone="danger">{error}</Notice></div>}
