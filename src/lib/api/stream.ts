@@ -38,6 +38,7 @@ export async function askStream(session_id: string, message: string, h: StreamHa
   const reader = res.body.getReader();
   const dec = new TextDecoder();
   let buf = "";
+  let settled = false;                              // done 이나 error 를 한 번이라도 받았나
   const dispatch = (block: string) => {
     let event = "message";
     const data: string[] = [];
@@ -51,8 +52,9 @@ export async function askStream(session_id: string, message: string, h: StreamHa
     switch (event) {
       case "meta": h.onMeta?.(payload as { evidence_count: number }); break;
       case "delta": h.onDelta((payload as { text: string }).text); break;
-      case "done": h.onDone(payload as AskResponse); break;
+      case "done": settled = true; h.onDone(payload as AskResponse); break;
       case "error": {
+        settled = true;
         const p = payload as { code: ErrorCode; message: string; details?: unknown };
         h.onError(new ApiError(0, p.code, p.message, p.details));
         break;
@@ -72,6 +74,11 @@ export async function askStream(session_id: string, message: string, h: StreamHa
       }
     }
     if (buf.trim()) dispatch(buf);
+    // done 도 error 도 없이 끝나는 길이 있다 — 앞단(nginx)이 멎은 스트림을 끊으면 이렇게 된다.
+    // 여기서 아무것도 안 하면 로딩만 사라지고 화면에 질문만 덩그러니 남는다.
+    if (!settled && !signal?.aborted) {
+      h.onError(new ApiError(0, "NETWORK_ERROR", "답변이 오다가 끊겼어요", "stream closed before done"));
+    }
   } catch (e) {
     if ((e as Error).name !== "AbortError") h.onError(new ApiError(0, "NETWORK_ERROR", "연결이 끊겼어요. 다시 시도해주세요", String(e)));
   }
