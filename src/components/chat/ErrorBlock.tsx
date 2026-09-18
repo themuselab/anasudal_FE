@@ -44,9 +44,13 @@ export function ErrorBlock({
   );
 }
 
-/** "…다시 시도해주세요." 로 끝나는 사유는 꼬리를 뗀다 — 바로 아래 버튼이 같은 말을 한다 */
+/** "…다시 시도해주세요." 로 끝나는 사유는 꼬리를 뗀다 — 바로 아래 버튼이 같은 말을 한다.
+ *  "잠시 후"까지 같이 떼야 한다. 안 그러면 "답변 생성에 실패했어요. 잠시 후" 로 문장이 끊긴다. */
 function trimRetryHint(text: string) {
-  return text.replace(/\s*다시 시도해\s*주세요[.!]?\s*$/, "").trim() || "답변을 가져오지 못했어요.";
+  return (
+    text.replace(/[\s,·]*(?:잠시\s*후\s*)?다시\s*시도해\s*주세요[.!]?\s*$/, "").trim() ||
+    "답변을 가져오지 못했어요."
+  );
 }
 
 function RetryIcon() {
