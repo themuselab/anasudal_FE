@@ -17,6 +17,7 @@ const TAG_LIMIT = 3;
  * 상세로 한 번 더 들어가게 만들 이유가 없다.
  */
 export function InstitutionCardView({ item, reason }: { item: CardData; reason?: string }) {
+  const href = `/institutions/${encodeURIComponent(item.biz_no)}`;
   const ordered = sortAreas(item.area_codes);
   const shown = ordered.slice(0, TAG_LIMIT);
   const rest = ordered.length - shown.length;
@@ -24,11 +25,17 @@ export function InstitutionCardView({ item, reason }: { item: CardData; reason?:
   return (
     <Card padding="lg" className="rounded-xl">
       <div className="flex items-start justify-between gap-3">
-        <Text variant="title-s" as="h3">{item.name}</Text>
-        <Link
-          href={`/institutions/${encodeURIComponent(item.biz_no)}`}
-          className="t-caption shrink-0 text-muted transition-colors hover:text-primary"
-        >
+        {/* 이름이 가장 크고 눈에 먼저 들어오는데 누를 수 없으면 손이 헛돈다.
+            "상세보기"는 그대로 둔다 — 이름만 링크면 누를 수 있다는 걸 모르는 사람이 있다. */}
+        <Text variant="title-s" as="h3">
+          <Link
+            href={href}
+            className="transition-colors hover:text-primary hover:underline underline-offset-4"
+          >
+            {item.name}
+          </Link>
+        </Text>
+        <Link href={href} className="t-caption shrink-0 text-muted transition-colors hover:text-primary">
           상세보기
         </Link>
       </div>

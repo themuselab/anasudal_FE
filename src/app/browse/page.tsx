@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { AppFooter, AppHeader } from "@/components/layout/AppHeader";
 import { BrowseView } from "@/components/browse/BrowseView";
 
@@ -7,7 +8,9 @@ export default function BrowsePage() {
   return (
     <div className="flex min-h-dvh flex-col">
       <AppHeader />
-      <BrowseView />
+      <Suspense>
+        <BrowseView />
+      </Suspense>
       <AppFooter />
     </div>
   );

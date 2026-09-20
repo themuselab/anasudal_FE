@@ -1,4 +1,5 @@
 "use client";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, humanize, type InstitutionCard, type Region } from "@/lib/api";
 import { Button, Card, Notice, Text } from "@/components/ui";
@@ -8,16 +9,32 @@ import { SearchBox } from "@/components/browse/SearchBox";
 
 const SIZE = 20;
 
+/** 주소에 담긴 지역을 되살린다. institution_count 는 패널 목록에만 쓰여 여기선 0 이면 된다. */
+function regionFromUrl(sp: URLSearchParams | ReturnType<typeof useSearchParams>): Region | null {
+  const id = Number(sp.get("region"));
+  const sido = sp.get("sido");
+  const sigungu = sp.get("sigungu");
+  if (!id || !sido || !sigungu) return null;
+  return { region_id: id, sido, sigungu, institution_count: 0 };
+}
+
 /**
  * 둘러보기 (시안 pc/mb-둘러보기 메인 · 지역 설정 · 검색창 입력 · 필터결과 없음)
  *  [지역 설정 ▾] [🔍 기관 이름 검색하기]
  *  총 N곳 · [초기화]
  *  기관 카드 — 무한 스크롤 + 창 스크롤 가상화 (InstitutionList)
+ *
+ * 고른 지역·검색어는 주소에 남긴다. 기관 상세를 보고 뒤로 왔을 때 화면이 다시 만들어지는데,
+ * 상태를 메모리에만 두면 그때 필터가 풀린다 — 부모는 지역을 다시 고르게 된다.
+ * 주소에 있으면 새로고침·뒤로가기·링크 공유까지 같이 산다.
  */
 export function BrowseView() {
-  const [region, setRegion] = useState<Region | null>(null);
-  const [q, setQ] = useState("");           // 입력창에 보이는 값
-  const [query, setQuery] = useState("");   // 타이핑이 멎으면 반영되는 검색어
+  const sp = useSearchParams();
+  const router = useRouter();
+
+  const [region, setRegion] = useState<Region | null>(() => regionFromUrl(sp));
+  const [q, setQ] = useState(() => sp.get("q") ?? "");           // 입력창에 보이는 값
+  const [query, setQuery] = useState(() => sp.get("q") ?? "");   // 타이핑이 멎으면 반영되는 검색어
   const [items, setItems] = useState<InstitutionCard[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -54,6 +71,19 @@ export function BrowseView() {
     },
     [region, query],
   );
+
+  // 고른 조건을 주소에 적어둔다. 되돌아왔을 때 위에서 그대로 읽는다
+  useEffect(() => {
+    const p = new URLSearchParams();
+    if (region) {
+      p.set("region", String(region.region_id));
+      p.set("sido", region.sido);
+      p.set("sigungu", region.sigungu);
+    }
+    if (query) p.set("q", query);
+    const qs = p.toString();
+    router.replace(qs ? `/browse?${qs}` : "/browse", { scroll: false });
+  }, [region, query, router]);
 
   // 타이핑이 멎으면 검색 (300ms)
   useEffect(() => {
